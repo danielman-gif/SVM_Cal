@@ -3,7 +3,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.datasets import fetch_california_housing
-from langchain_chroma import Chroma
+from langchain_community.vectorstores import FAISS
 from langchain_community.embeddings import OpenAIEmbeddings
 from dotenv import load_dotenv
 import os
@@ -24,10 +24,15 @@ embedding_function = OpenAIEmbeddings(
     model="text-embedding-3-small",
     openai_api_key=openai_api_key
 )
-vectorstore = Chroma(
-    persist_directory="chroma_project_db",
-    embedding_function=embedding_function
+import faiss 
+
+vectorstore = FAISS.load_local(
+    "faiss_project_db",
+    embeddings=embedding_function,
+    allow_dangerous_deserialization=True
 )
+
+retriever = vectorstore.as_retriever(search_kwargs={"k": 10})
 retriever = vectorstore.as_retriever(search_kwargs={"k": 10})
 
 # === Setup Gemini Flash LLM + QA chain
