@@ -1,0 +1,14 @@
+streamlit
+pandas
+seaborn
+matplotlib
+scikit-learn
+joblib
+requests
+python-dotenv
+openai
+langchain
+langchain-community
+langchain-google-genai
+langchain-chroma
+streamlit-lottie

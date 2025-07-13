@@ -1,0 +1,10 @@
+[theme]
+base = "dark"
+primaryColor = "#0ff0fc"               # Futuristic cyan
+backgroundColor = "#0e1117"            # Dark navy
+secondaryBackgroundColor = "#1a1e29"   # Sidebar/cards
+textColor = "#f1f1f1"
+font = "sans serif"
+
+[layout]
+wide = true
