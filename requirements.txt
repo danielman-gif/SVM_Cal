@@ -12,3 +12,4 @@ langchain-community
 langchain-google-genai
 langchain-chroma
 streamlit-lottie
+faiss-cpu
