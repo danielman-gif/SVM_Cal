@@ -14,3 +14,4 @@ langchain-chroma==0.1.4
 streamlit-lottie
 faiss-cpu
 tiktoken
+pydantic==1.10.13
