@@ -3,7 +3,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.datasets import fetch_california_housing
-from langchain_community.vectorstores import FAISS
+from langchain_community.vectorstores import Chroma
 from langchain_community.embeddings import OpenAIEmbeddings
 from dotenv import load_dotenv
 import os
@@ -28,10 +28,10 @@ embedding_function = OpenAIEmbeddings(
 )
 import faiss 
 
-vectorstore = FAISS.load_local(
-    "faiss_project_db",
-    embeddings=embedding_function,
-    allow_dangerous_deserialization=True
+# Use ChromaDB instead of FAISS to avoid Pydantic compatibility issues
+vectorstore = Chroma(
+    persist_directory="chroma_db",
+    embedding_function=embedding_function
 )
 
 retriever = vectorstore.as_retriever(search_kwargs={"k": 10})

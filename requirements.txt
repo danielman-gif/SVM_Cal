@@ -9,8 +9,10 @@ python-dotenv
 openai
 langchain==0.2.16
 langchain-community==0.2.16
+langchain-core==0.2.16
 langchain-google-genai==1.0.4
 langchain-chroma==0.1.4
 streamlit-lottie
-faiss-cpu
+chromadb==0.5.23
 tiktoken
+pydantic==1.10.13
