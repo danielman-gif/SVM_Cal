@@ -1,4 +1,4 @@
-streamlit==1.46.1
+streamlit
 pandas
 seaborn
 matplotlib
@@ -7,10 +7,10 @@ joblib
 requests
 python-dotenv
 openai
-langchain==0.2.16
-langchain-community==0.2.16
-langchain-google-genai==1.0.4
-langchain-chroma==0.1.4
+langchain
+langchain-community
+langchain-google-genai
+langchain-chroma
 streamlit-lottie
 faiss-cpu
 tiktoken
