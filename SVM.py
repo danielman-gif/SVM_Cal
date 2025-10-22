@@ -14,7 +14,7 @@ from langchain_core.runnables import RunnablePassthrough
 import joblib
 from streamlit_lottie import st_lottie
 import requests
-from langchain.chat_models import ChatOpenAI
+from langchain_openai import ChatOpenAI
 
 # === Load environment ===
 load_dotenv()
