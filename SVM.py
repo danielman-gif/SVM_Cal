@@ -8,9 +8,9 @@ from langchain_community.embeddings import OpenAIEmbeddings
 from dotenv import load_dotenv
 import os
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain.chains import create_retrieval_chain
-from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.runnables import RunnablePassthrough
 import joblib
 from streamlit_lottie import st_lottie
 import requests
@@ -51,24 +51,31 @@ llm = ChatOpenAI(
 )
 
 
+# Create a simple QA chain using the modern LangChain approach
+def format_docs(docs):
+    return "\n\n".join(doc.page_content for doc in docs)
+
 # Create the prompt template
-system_prompt = (
-    "Use the given context to answer the question about the California Housing dataset and SVM models. "
-    "If you don't know the answer, say you don't know. "
-    "Use three sentences maximum and keep the answer concise. "
-    "Context: {context}"
+prompt = ChatPromptTemplate.from_template("""
+Use the following context to answer the question about the California Housing dataset and SVM models.
+If you don't know the answer, say you don't know.
+Use three sentences maximum and keep the answer concise.
+
+Context: {context}
+
+Question: {question}
+""")
+
+# Create the QA chain
+qa_chain = (
+    {
+        "context": retriever | format_docs,
+        "question": RunnablePassthrough(),
+    }
+    | prompt
+    | llm
+    | StrOutputParser()
 )
-
-prompt = ChatPromptTemplate.from_messages([
-    ("system", system_prompt),
-    ("human", "{input}"),
-])
-
-# Create the document combination chain
-combine_documents_chain = create_stuff_documents_chain(llm, prompt)
-
-# Create the retrieval chain
-qa_chain = create_retrieval_chain(retriever, combine_documents_chain)
 
 
 st.markdown("""
@@ -168,8 +175,8 @@ with st.sidebar:
         prediction_context = "\n".join(context_lines)
         full_query = prediction_context + "\n" + user_input if context_lines else user_input
 
-        response = qa_chain.invoke({"input": full_query})
-        st.success(f"🧠 **Answer:** {response['answer']}")
+        response = qa_chain.invoke(full_query)
+        st.success(f"🧠 **Answer:** {response}")
 
 
 
