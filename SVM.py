@@ -28,14 +28,19 @@ embedding_function = OpenAIEmbeddings(
 )
 import faiss 
 
-vectorstore = FAISS.load_local(
-    "faiss_project_db",
-    embeddings=embedding_function,
-    allow_dangerous_deserialization=True
-)
-
-retriever = vectorstore.as_retriever(search_kwargs={"k": 10})
-retriever = vectorstore.as_retriever(search_kwargs={"k": 10})
+# Try to load FAISS database, fallback to simple mode if it fails
+try:
+    vectorstore = FAISS.load_local(
+        "faiss_project_db",
+        embeddings=embedding_function,
+        allow_dangerous_deserialization=True
+    )
+    retriever = vectorstore.as_retriever(search_kwargs={"k": 10})
+    use_retrieval = True
+except Exception as e:
+    print(f"FAISS database not available: {e}")
+    retriever = None
+    use_retrieval = False
 
 # === Setup Gemini Flash LLM + QA chain
 # llm = ChatGoogleGenerativeAI(
@@ -51,12 +56,12 @@ llm = ChatOpenAI(
 )
 
 
-# Create a simple QA chain using the modern LangChain approach
-def format_docs(docs):
-    return "\n\n".join(doc.page_content for doc in docs)
+# Create QA chain based on availability of retrieval
+if use_retrieval:
+    def format_docs(docs):
+        return "\n\n".join(doc.page_content for doc in docs)
 
-# Create the prompt template
-prompt = ChatPromptTemplate.from_template("""
+    prompt = ChatPromptTemplate.from_template("""
 Use the following context to answer the question about the California Housing dataset and SVM models.
 If you don't know the answer, say you don't know.
 Use three sentences maximum and keep the answer concise.
@@ -66,16 +71,26 @@ Context: {context}
 Question: {question}
 """)
 
-# Create the QA chain
-qa_chain = (
-    {
-        "context": retriever | format_docs,
-        "question": RunnablePassthrough(),
-    }
-    | prompt
-    | llm
-    | StrOutputParser()
-)
+    qa_chain = (
+        {
+            "context": retriever | format_docs,
+            "question": RunnablePassthrough(),
+        }
+        | prompt
+        | llm
+        | StrOutputParser()
+    )
+else:
+    # Simple chatbot without retrieval
+    prompt = ChatPromptTemplate.from_template("""
+You are a helpful AI assistant for a California Housing SVM Regression project.
+Answer questions about SVM models, regression, the California housing dataset, and machine learning concepts.
+Be concise and helpful. If you don't know something, say you don't know.
+
+Question: {question}
+""")
+    
+    qa_chain = prompt | llm | StrOutputParser()
 
 
 st.markdown("""
@@ -175,7 +190,10 @@ with st.sidebar:
         prediction_context = "\n".join(context_lines)
         full_query = prediction_context + "\n" + user_input if context_lines else user_input
 
-        response = qa_chain.invoke(full_query)
+        if use_retrieval:
+            response = qa_chain.invoke(full_query)
+        else:
+            response = qa_chain.invoke({"question": full_query})
         st.success(f"🧠 **Answer:** {response}")
 
 
